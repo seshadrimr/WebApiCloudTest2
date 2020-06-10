@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,9 +13,28 @@ namespace WebApiCoreCloudTest2.Controllers
     {
         // GET api/values
         [HttpGet]
-        public ActionResult<string> Get()
+        public ActionResult<string[]> Get()
         {
-            return "value1";
+            string[] arr = { "a" };
+
+            using (var client = new HttpClient())
+            {
+                client.BaseAddress = new Uri("http://webapicloudtestservice/api/");
+                //HTTP GET
+                var responseTask = client.GetAsync("Values");
+                responseTask.Wait();
+
+                var result = responseTask.Result;
+                if (result.IsSuccessStatusCode)
+                {
+                    var readTask = result.Content.ReadAsAsync<string[]>();
+                    readTask.Wait();
+
+                    arr = readTask.Result;
+
+                }
+            }
+            return arr;
         }
 
         // GET api/values/5
